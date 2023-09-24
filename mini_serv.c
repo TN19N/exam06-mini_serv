@@ -8,7 +8,7 @@
 # include <stdio.h>
 
 # define MAX_CLIENTS 128
-# define MAX_BUFFER  2000000
+# define MAX_BUFFER  200000
 
 void error(char *msg) {
     write(2, msg, strlen(msg));
@@ -28,10 +28,8 @@ int extract_message(char **buf, char **msg) {
     i = 0;
     while ((*buf)[i]) {
         if ((*buf)[i] == '\n') {
-            *msg = calloc(1, sizeof(char) * (i + 1));
+            *msg = *buf;
             (*buf)[i] = 0;
-            strcpy(*msg, *buf);
-            (*msg)[i] = 0;
             *buf += (i + 1);
             return (1);
         }
@@ -39,10 +37,8 @@ int extract_message(char **buf, char **msg) {
     }
 
     if (i != 0) {
-        *msg = calloc(1, sizeof(char) * (i + 1));
+        *msg = *buf;
         (*buf)[i] = 0;
-        strcpy(*msg, *buf);
-        (*msg)[i] = 0;
         *buf += i;
         return (1);
     }
@@ -81,6 +77,7 @@ int main(int argc, char **argv) {
     int maxSocket = serverSocket;
 
     char buffer[MAX_BUFFER];
+    char buffer2[MAX_BUFFER + 100];
     int  clients[MAX_CLIENTS];
     int  clients_count = 0;
 
@@ -128,16 +125,14 @@ int main(int argc, char **argv) {
                         buffer[byteReads] = '\0';
                         char *buf = buffer;
                         char *msg = NULL;
+
                         while (extract_message(&buf, &msg)) {
-                            char *full_msg = calloc(strlen(msg) + 100, sizeof(char));
-                            sprintf(full_msg, "client %d: %s\n", clientId, msg);
-                            free(msg);
+                            sprintf(buffer2, "client %d: %s\n", clientId, msg);
                             for (int id = 0; id < clients_count; ++id) {
                                 if (clients[id] != -1 && id != clientId) {
-                                    ft_send(full_msg, clients[id]);
+                                    ft_send(buffer2, clients[id]);
                                 }
                             }
-                            free(full_msg);
                         }
                     }
                 }
