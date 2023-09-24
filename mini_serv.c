@@ -15,53 +15,38 @@ void error(char *msg) {
     exit(1);
 }
 
-int is_valid_digits(char* str) {
-    int len = strlen(str);
-    
-    if (len > 5) {
-        return 0;
-    }
-    for (int i = 0; i < len; ++i) {
-        if (str[i] < '0' || str[i] > '9') {
-            return 0;
-        }
-    }
-    return 1;
-}
-
 void ft_send(char* buffer, int socket) {
     while (*buffer) {
         buffer += send(socket, buffer, strlen(buffer), 0);
     }
 }
 
-int extract_message(char **buf, char **msg)
-{
-	char	*newbuf;
-	int	i;
+int extract_message(char **buf, char **msg) {
+    int	i;
 
-	*msg = 0;
-	i = 0;
-	while ((*buf)[i]) {
-		if ((*buf)[i] == '\n') {
-			*msg = calloc(1, sizeof(*newbuf) * (i + 1));
+    *msg = 0;
+    i = 0;
+    while ((*buf)[i]) {
+        if ((*buf)[i] == '\n') {
+            *msg = calloc(1, sizeof(char) * (i + 1));
             (*buf)[i] = 0;
-			strcpy(*msg, *buf);
-			(*msg)[i + 1] = 0;
-			*buf += (i + 1);
+            strcpy(*msg, *buf);
+            (*msg)[i] = 0;
+            *buf += (i + 1);
             return (1);
-		}
-		i++;
-	}
+        }
+        i++;
+    }
+
     if (i != 0) {
-        *msg = calloc(1, sizeof(*newbuf) * (i + 1));
+        *msg = calloc(1, sizeof(char) * (i + 1));
         (*buf)[i] = 0;
         strcpy(*msg, *buf);
-        (*msg)[i + 1] = 0;
+        (*msg)[i] = 0;
         *buf += i;
         return (1);
     }
-	return (0);
+    return (0);
 }
 
 int main(int argc, char **argv) {
@@ -74,17 +59,11 @@ int main(int argc, char **argv) {
         error("Fatal error\n");
     }
 
-    int serevrPort;
-    if (!(is_valid_digits(argv[1]) && (serevrPort = atoi(argv[1])))) {
-        close(serverSocket);
-        error("Fatal error\n");
-    }
-
     struct sockaddr_in serverAddr;
     bzero(&serverAddr, sizeof(serverAddr));
     serverAddr.sin_family = AF_INET; 
     serverAddr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-    serverAddr.sin_port = htons(serevrPort);
+    serverAddr.sin_port = htons(atoi(argv[1]));
 
     if (bind(serverSocket, (const struct sockaddr*)&serverAddr, sizeof(serverAddr)) == -1) {
         close(serverSocket);
@@ -105,7 +84,7 @@ int main(int argc, char **argv) {
     int  clients[MAX_CLIENTS];
     int  clients_count = 0;
 
-    while (1) {
+    while(1) {
         readySockets = activeSockets;
         if (select(maxSocket + 1, &readySockets, NULL, NULL, NULL) == -1) {
             error("Fatal error\n");
