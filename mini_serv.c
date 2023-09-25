@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
         error("Fatal error\n");
     }
 
-    if (listen(serverSocket, 10) == -1) {
+    if (listen(serverSocket, MAX_CLIENTS) == -1) {
         close(serverSocket);
         error("Fatal error\n");
     }
